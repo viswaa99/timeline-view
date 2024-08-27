@@ -1,0 +1,72 @@
+.chart-container {
+  position: relative;
+  height: 400px;
+  border: 1px dotted black;
+  overflow-x: auto;
+}
+
+/* .current-time {
+  position: relative;
+  width: 1px;
+  height: 800px;
+  background: tomato;
+   transform: translateX(600px);
+} */
+
+.current-marker {
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  background: tomato;
+  z-index: 12;
+}
+
+.task {
+  height: 42px;
+  background: darkcyan;
+  border-radius: 4px;
+  cursor: move;
+  z-index: 11;
+  margin-block: 6px;
+  /* position: absolute; */
+  display: grid;
+  place-items: center;
+  min-width: 10px;
+}
+
+.start-marker {
+  position: absolute;
+  height: 100%;
+  width: 1px;
+  background: dodgerblue;
+}
+
+.gant-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 1200px;
+}
+
+.gantt-task-resize-left,
+.gantt-task-resize-right {
+  width: 6px;
+
+  height: 100%;
+
+  background-color: #333;
+
+  cursor: ew-resize;
+
+  position: absolute;
+
+  top: 0;
+}
+
+.gantt-task-resize-left {
+  left: 0;
+}
+
+.gantt-task-resize-right {
+  right: 0;
+}

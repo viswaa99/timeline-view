@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "AcZ_4BgZvjmoT::2024:08:08",
+    "Date": "2024-06-20T00:00:00Z",
+    "Name": "goodday",
+    "Kind": "Holiday"
+  },
+  {
+    "_id": "AcZ_4BgZvjmoT::2024:08:12",
+    "Date": "2024-06-22T00:00:00Z",
+    "Name": "goodday 2",
+    "Kind": "Holiday"
+  },
+  {
+    "_id": "AcZ_4BgZvjmoT::2024:08:15",
+    "Date": "2024-08-15T00:00:00Z",
+    "Name": "goodday 3",
+    "Kind": "Holiday"
+  }
+]
