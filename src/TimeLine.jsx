@@ -44,11 +44,11 @@ const ZOOM_LEVELS = {
     startDate: moment()
       .utc()
       .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
-      .subtract(1, 'month'),
+      .subtract(10, 'day'),
     endDate: moment()
       .utc()
       .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
-      .add(1, 'month'),
+      .add(10, 'day'),
     format: (date) => `${date.getHours()}:00`,
   },
   DAY: {
@@ -164,6 +164,8 @@ export default function Timeline() {
     setZoomLevel(level);
   };
 
+
+
   const data = useMemo(function setData() {
     return JSON.parse(makeData(500));
   }, []);
@@ -271,11 +273,24 @@ export default function Timeline() {
       count: rows.length,
       getScrollElement: () => tableContainerRef.current,
       estimateSize: () => 60, // rowHeight
-      overscan: 15, // overscanCount
+      overscan: 25, // overscanCount
     });
+
+const visibleColumns = table.getVisibleLeafColumns().slice(fieldLength);
+
+    const columnVirtualizer = useVirtualizer({
+      count: visibleColumns.length,
+      estimateSize:()=> ZOOM_LEVELS[zoomLevel].width, //estimate width of each column for accurate scrollbar dragging
+      getScrollElement: () => calendarRef.current,
+      horizontal: true,
+      overscan: 3, //how many columns to render on each side off screen each way (adjust this for performance)
+    });
+
+      console.log(table.getVisibleLeafColumns(), 'visible leaf columns');
 
     const totalHeight = rowVirtualizer.getTotalSize();
     const virtualRows = rowVirtualizer.getVirtualItems();
+    const virtualColumns = columnVirtualizer.getVirtualItems();
 
     const paddingTop =
       virtualRows.length > 0 ? virtualRows?.[0]?.start || 0 : 0;
@@ -527,6 +542,108 @@ return (
 );
   }
 
+
+  //  function getDiff() {
+  //    switch (zoomLevel) {
+  //      case 'HOUR':
+  //      case 'DAY':
+  //      case 'WEEK':
+  //        return ZOOM_LEVELS[zoomLevel].endDate
+  //          .utc()
+  //          .startOf('day')
+  //          .diff(ZOOM_LEVELS[zoomLevel].startDate
+  //          .utc()
+  //          .startOf('day'));
+  //      default:
+  //        throw new Error('Invalid time unit for adding time');
+  //    }
+  //  }
+
+  //  console.log(getDiff(),"diffr");
+
+  // function renderArea(){
+  //   return (
+  //     <div
+  //       style={{
+  //         display: 'grid',
+  //         border: '1px solid black',
+  //         background:'red',
+          
+  //         height: `${rowVirtualizer.getTotalSize()}px`,
+  //         width: `${
+  //           rows[0].getVisibleCells().slice(fieldLength).length *
+  //           ZOOM_LEVELS[zoomLevel].overlayWidth
+  //         }px`,
+  //       }}
+  //     >
+  //       {/* {paddingTop > 0 && (
+  //         <tr>
+  //           <td style={{ height: `${paddingTop}px` }} />
+  //         </tr>
+  //       )}
+  //       {virtualRows.map((virtualRow, index) => {
+  //         const row = rows[virtualRow.index];
+  //         console.log(row, 'ROZ');
+  //         return (
+  //           <div
+  //             data-index={virtualRow.index}
+  //             key={`${row.id} ${uuid()}`}
+  //             style={{
+  //               display: 'grid',
+  //               // gridAutoFlow: 'column',
+  //               position: 'relative',
+  //               height: '60px',
+  //             }}
+  //           >
+  //             <TaskItem
+  //               data={row.original}
+  //               index={row.index}
+  //               zoomValue={zoomLevel}
+  //               startDate={() => getStartDate()}
+  //               calendarRef={calendarRef}
+  //               marginTop={row.index * 60}
+  //             />
+  //           </div>
+  //         );
+  //       })}
+  //       {paddingBottom > 0 && (
+  //         <tr>
+  //           <td style={{ height: `${paddingBottom}px` }} />
+  //         </tr>
+  //       )} */}
+  //     </div>
+  //   );
+  // }
+
+  const [leftWidth, setLeftWidth] = useState(50); // Start with 50% width for left column
+  const containerRef = useRef(null);
+  const requestRef = useRef(null);
+
+  const handleMouseDown = () => {
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleMouseMove = (e) => {
+    if (tableContainerRef.current) {
+      requestRef.current = requestAnimationFrame(() => {
+        const containerWidth = tableContainerRef.current.offsetWidth;
+        const newLeftWidth =
+          ((e.clientX - tableContainerRef.current.offsetLeft) / containerWidth) *
+          100;
+        setLeftWidth(newLeftWidth);
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+    if (requestRef.current) {
+      cancelAnimationFrame(requestRef.current);
+    }
+  };
+
   return (
     <>
       <div className='zoom-controls'>
@@ -540,7 +657,10 @@ return (
         <div className='table-wrapper' ref={tableContainerRef}>
           <div
             className='table-data-wrapper'
-            style={{ height: `${data.length * 60 + 80}px` }}
+            style={{
+              height: `${data.length * 60 + 80}px`,
+              flexBasis: `${leftWidth}%`,
+            }}
           >
             <table>
               <thead className='sticky-header' style={{ height: '80px' }}>
@@ -595,12 +715,18 @@ return (
               </tbody>
             </table>
           </div>
+          {/* <div
+            className='resizer'
+            style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+            onMouseDown={handleMouseDown}
+          /> */}
           <div
             className='table-data-wrapper'
             ref={calendarRef}
             style={{
               height: `${data.length * 60 + 80}px`,
               position: 'relative',
+              flexBasis:`${100 - leftWidth}%`,
             }}
           >
             {renderFakeOverlay()}
@@ -659,15 +785,9 @@ return (
                   console.log(row, 'ROZ');
                   return (
                     <>
-                      {/* <TaskItem
-                        data={row.original}
-                        index={row.index}
-                        zoomValue={zoomLevel}
-                        startDate={() => getStartDate()}
-                        calendarRef={calendarRef}
-                      /> */}
                       <tr
                         key={`${row.id} ${uuid()}`}
+                        data-index={virtualRow.index}
                         // style={{ position: 'relative' }}
                       >
                         {row.getVisibleCells().map((cell, index) => {

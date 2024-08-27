@@ -127,6 +127,7 @@ flex-basis: 50%;
   overflow-x: auto;
   overflow-y: hidden;
   height: 1250px;
+  transition: flex-basis 0.3s ease;
 }
 
 .table-data-wrapper table{
@@ -166,3 +167,10 @@ overflow-x: hidden !important;
 /* .cell{
   border-inline: 1px solid #ddd;
 } */
+
+.resizer{
+  width: 5px;
+  height: 100%;
+  background: #ccc;
+   cursor: col-resize;
+}
